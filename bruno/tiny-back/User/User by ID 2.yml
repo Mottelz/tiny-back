@@ -1,0 +1,22 @@
+info:
+  name: User by ID
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/user/1"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "b@c.de"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
