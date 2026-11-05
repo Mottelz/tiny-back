@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private readonly users: Repository<User>){}
+  constructor(@InjectRepository(User) private readonly users: Repository<User>) {}
 
   create(dto: CreateUserDto) {
     const user = this.users.create(dto);

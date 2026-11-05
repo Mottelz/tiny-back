@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, type Relation } from 'typeorm';
+import { Post } from '../../post/entities/post.entity.js';
 
 @Entity('users')
 export class User {
@@ -13,5 +14,8 @@ export class User {
 
     @Column({ select: false })
     password: string;
+
+    @OneToMany(() => Post, (post) => post.author)
+    posts: Relation<Post[]>;
 }
 

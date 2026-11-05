@@ -4,6 +4,7 @@ import { AppService } from './app.service.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module.js';
+import { PostModule } from './post/post.module.js';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { UserModule } from './user/user.module.js';
         synchronize: config.get<string>('NODE_ENV') !== 'prod'
       })
     }),
-    UserModule
+    UserModule,
+    PostModule
   ],
   controllers: [AppController],
   providers: [AppService],
