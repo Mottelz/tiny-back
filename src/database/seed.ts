@@ -8,9 +8,11 @@ import { Post } from '../post/entities/post.entity.js';
 const logger = new Logger('Seed');
 
 async function seed(manager: EntityManager) {
-  // TODO: insert seed data, e.g.
-  // const users = await manager.save(User, [{ ... }]);
-  // await manager.save(Post, [{ ..., author: users[0] }]);
+  // Safe to run more than once: skip if there is already data.
+  if (await manager.count(User)) {
+    logger.log('Database already has users, skipping seed');
+    return;
+  }
 
   const users = await manager.save(User, [
     {name: 'some guy', email: 'someguy@madeup.com', password: 'password'},

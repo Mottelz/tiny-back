@@ -15,8 +15,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Im Alive!!!"', () => {
-      expect(appController.getHello()).toBe('Im Alive!!!');
+    it('should return { alive: true }', () => {
+      expect(appController.getHello()).toEqual({ alive: true });
     });
   });
 });

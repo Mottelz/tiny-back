@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+test
+bruno
+.git
+.claude
+.env
+*.tsbuildinfo

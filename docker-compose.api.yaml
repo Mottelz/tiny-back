@@ -1,0 +1,46 @@
+# Runs the tiny API + its database, pre-loaded with sample data, for the
+# front end course. Ships as docker-compose.yaml in the student zip
+# (build it with `pnpm dock:zip`; usage in api-bundle/README.md).
+#
+# To run it from this repo instead:
+#   docker compose -f docker-compose.api.yaml up -d --build
+#
+# The back end course does NOT use this file; it uses docker-compose.yaml.
+name: tiny-api
+
+services:
+  api:
+    image: tiny-api:local
+    build: .
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: tiny
+      DB_PASS: tiny
+      DB_NAME: tiny
+      # Anything but "prod" lets TypeORM create the tables on start.
+      NODE_ENV: dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tiny
+      POSTGRES_PASSWORD: tiny
+      POSTGRES_DB: tiny
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tiny -d tiny"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+volumes:
+  pgdata:

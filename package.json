@@ -11,6 +11,7 @@
     "deploy": "nest deploy",
     "dock:up": "docker compose up -d",
     "dock:down": "docker compose down",
+    "dock:zip": "sh api-bundle/make-zip.sh",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
