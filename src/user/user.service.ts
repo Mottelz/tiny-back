@@ -4,18 +4,28 @@ import { UpdateUserDto } from './dto/update-user.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity.js';
 import { Repository } from 'typeorm';
+import { hashPassword } from './password.js';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private readonly users: Repository<User>) {}
 
-  create(dto: CreateUserDto) {
-    const user = this.users.create(dto);
-    return this.users.save(user);
+  async create(dto: CreateUserDto) {
+    const password = await hashPassword(dto.password);
+    const user = this.users.create({ ...dto, password: password });
+    const saved = await this.users.save(user);
+    return this.findOne(saved.id);
   }
 
   findAll() {
     return this.users.find();
+  }
+
+  findByEmailWithPassword(email: string) {
+    return this.users.findOne({
+      where: { email },
+      select: { id: true, email: true, password: true }
+    });
   }
 
   async findOne(id: number) {
@@ -25,7 +35,8 @@ export class UserService {
   }
 
   async update(id: number, dto: UpdateUserDto) {
-    await this.users.update(id, dto);
+    const changes = dto.password ? { ...dto, password: await hashPassword(dto.password) } : dto;
+    await this.users.update(id, changes);
     return this.findOne(id);
   }
 

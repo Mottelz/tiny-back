@@ -39,6 +39,8 @@ describe('UserController (e2e)', () => {
         name: dto.name,
         email: dto.email,
       });
+
+      expect(res.body).not.toHaveProperty('password')
     });
 
     it.each([

@@ -30,11 +30,11 @@ describe('UserController', () => {
   it('create saves and returns the new user', async () => {
     const dto = { name: 'Ann', email: 'ann@example.com', password: 'secret123' };
     const user = { id: 1, ...dto } as User;
-    repo.create!.mockReturnValue(user);
+    repo.create!.mockImplementation((data) => data);
     repo.save!.mockResolvedValue(user);
+    repo.findOneBy!.mockResolvedValue(user)
 
     await expect(controller.create(dto)).resolves.toBe(user);
-    expect(repo.create).toHaveBeenCalledWith(dto);
   });
 
   it('findAll returns users from the repository', async () => {

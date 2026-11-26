@@ -4,6 +4,7 @@ import { DataSource, type EntityManager } from 'typeorm';
 import { AppModule } from '../app.module.js';
 import { User } from '../user/entities/user.entity.js';
 import { Post } from '../post/entities/post.entity.js';
+import { hashPassword } from '../user/password.js';
 
 const logger = new Logger('Seed');
 
@@ -14,11 +15,13 @@ async function seed(manager: EntityManager) {
     return;
   }
 
+  const password = await hashPassword('password');
+
   const users = await manager.save(User, [
-    {name: 'some guy', email: 'someguy@madeup.com', password: 'password'},
-    {name: 'another guy', email: 'another@madeup.com', password: 'password'},
-    {name: 'some lady', email: 'third@madeup.com', password: 'password'},
-    {name: 'another lady', email: 'last@madeup.com', password: 'password'},
+    {name: 'some guy', email: 'someguy@madeup.com', password},
+    {name: 'another guy', email: 'another@madeup.com', password},
+    {name: 'some lady', email: 'third@madeup.com', password},
+    {name: 'another lady', email: 'last@madeup.com', password},
   ])
 
   await manager.save(Post, [

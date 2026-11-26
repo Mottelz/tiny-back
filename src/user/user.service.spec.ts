@@ -7,6 +7,7 @@ import {
   MockRepository,
   mockRepositoryProvider,
 } from '../test/mock-repository.js';
+import { verifyPassword } from './password.js';
 
 describe('UserService', () => {
   let service: UserService;
@@ -26,15 +27,19 @@ describe('UserService', () => {
   });
 
   describe('create', () => {
-    it('builds the entity from the dto and saves it', async () => {
+    it('hashes the password and returns the user without it', async () => {
       const dto = { name: 'Ann', email: 'ann@example.com', password: 'secret123' };
-      const user = { id: 1, ...dto } as User;
-      repo.create!.mockReturnValue(user);
+      const user = { id: 1, name: dto.name, email: dto.email } as User;
+      repo.create!.mockImplementation((data) => data);
       repo.save!.mockResolvedValue(user);
+      repo.findOneBy!.mockResolvedValue(user)
 
       await expect(service.create(dto)).resolves.toBe(user);
-      expect(repo.create).toHaveBeenCalledWith(dto);
-      expect(repo.save).toHaveBeenCalledWith(user);
+      expect(repo.findOneBy).toHaveBeenCalledWith({ id: 1 })
+
+      const created = repo.create!.mock.calls[0][0];
+      expect(created.password).not.toBe(dto.password);
+      expect(await verifyPassword(created.password, dto.password)).toBe(true);
     });
   });
 
