@@ -6,6 +6,9 @@ info:
 http:
   method: GET
   url: "{{baseUrl}}/auth/profile"
+  headers:
+    - name: Authorization
+      value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksImVtYWlsIjoic29tZWd1eUBtYWRldXAuY29tIiwiaWF0IjoxNzk1NzM4NTQzLCJleHAiOjE3OTU3NDIxNDN9.-6nQngCR0cC4KA1ak7dw1ag8XO72qItWg1JcWscvdlA
   auth: inherit
 
 settings:
