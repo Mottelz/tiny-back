@@ -43,6 +43,17 @@ describe('UserController (e2e)', () => {
       expect(res.body).not.toHaveProperty('password')
     });
 
+    it('returns 409 when the email is already in use', async () => {
+      await seedUser(dataSource, { email: dto.email });
+
+      const res = await request(app.getHttpServer())
+        .post('/user')
+        .send(dto)
+        .expect(409);
+
+      expect(res.body.message).toBe('Email already in use');
+    });
+
     it.each([
       ['a missing name', { ...dto, name: undefined }],
       ['an empty name', { ...dto, name: '' }],
@@ -135,8 +146,16 @@ describe('UserController (e2e)', () => {
 
       await request(app.getHttpServer())
         .delete(`/user/${user.id}`)
-        .expect(200);
+        .expect(204);
       await request(app.getHttpServer()).get(`/user/${user.id}`).expect(404);
+    });
+
+    it('returns 404 for an unknown id', async () => {
+      await request(app.getHttpServer()).delete('/user/999').expect(404);
+    });
+
+    it('returns 400 for an id that is not a number', async () => {
+      await request(app.getHttpServer()).delete('/user/abc').expect(400);
     });
 
     it("cascades to the user's posts", async () => {
@@ -145,7 +164,7 @@ describe('UserController (e2e)', () => {
 
       await request(app.getHttpServer())
         .delete(`/user/${user.id}`)
-        .expect(200);
+        .expect(204);
       await request(app.getHttpServer()).get(`/post/${post.id}`).expect(404);
     });
   });

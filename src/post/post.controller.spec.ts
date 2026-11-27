@@ -32,6 +32,7 @@ describe('PostController', () => {
     const post = { id: 1, ...dto } as Post;
     repo.create!.mockReturnValue(post);
     repo.save!.mockResolvedValue(post);
+    repo.findOne!.mockResolvedValue(post);
 
     await expect(controller.create(dto)).resolves.toBe(post);
     expect(repo.create).toHaveBeenCalledWith(dto);
@@ -44,18 +45,17 @@ describe('PostController', () => {
     await expect(controller.findAll()).resolves.toBe(posts);
   });
 
-  it('findOne converts the id to a number', async () => {
+  it('findOne returns the post', async () => {
     const post = { id: 2 } as Post;
-    repo.findOneBy!.mockResolvedValue(post);
+    repo.findOne!.mockResolvedValue(post);
 
-    await expect(controller.findOne('2')).resolves.toBe(post);
-    expect(repo.findOneBy).toHaveBeenCalledWith({ id: 2 });
+    await expect(controller.findOne(2)).resolves.toBe(post);
   });
 
   it('findOne throws NotFoundException when missing', async () => {
-    repo.findOneBy!.mockResolvedValue(null);
+    repo.findOne!.mockResolvedValue(null);
 
-    await expect(controller.findOne('2')).rejects.toBeInstanceOf(
+    await expect(controller.findOne(2)).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
@@ -63,16 +63,16 @@ describe('PostController', () => {
   it('update updates and returns the post', async () => {
     const post = { id: 3, title: 'New' } as Post;
     repo.update!.mockResolvedValue({ affected: 1 });
-    repo.findOneBy!.mockResolvedValue(post);
+    repo.findOne!.mockResolvedValue(post);
 
-    await expect(controller.update('3', { title: 'New' })).resolves.toBe(post);
+    await expect(controller.update(3, { title: 'New' })).resolves.toBe(post);
     expect(repo.update).toHaveBeenCalledWith(3, { title: 'New' });
   });
 
-  it('remove deletes the post by numeric id', async () => {
+  it('remove deletes the post', async () => {
     repo.delete!.mockResolvedValue({ affected: 1 });
 
-    await controller.remove('4');
+    await controller.remove(4);
     expect(repo.delete).toHaveBeenCalledWith(4);
   });
 });

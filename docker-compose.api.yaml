@@ -21,6 +21,8 @@ services:
       DB_NAME: tiny
       # Anything but "prod" lets TypeORM create the tables on start.
       NODE_ENV: dev
+      # Signs the login tokens. Fine for a local practice API, never for a real one.
+      JWT_SECRET: tiny-local-practice-secret
     ports:
       - "3000:3000"
     depends_on:

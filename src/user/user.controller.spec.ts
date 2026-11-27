@@ -44,18 +44,18 @@ describe('UserController', () => {
     await expect(controller.findAll()).resolves.toBe(users);
   });
 
-  it('findOne converts the id to a number', async () => {
+  it('findOne returns the user', async () => {
     const user = { id: 2 } as User;
     repo.findOneBy!.mockResolvedValue(user);
 
-    await expect(controller.findOne('2')).resolves.toBe(user);
+    await expect(controller.findOne(2)).resolves.toBe(user);
     expect(repo.findOneBy).toHaveBeenCalledWith({ id: 2 });
   });
 
   it('findOne should throw error if does not exist', async () => {
     repo.findOneBy!.mockResolvedValue(null);
 
-    await expect(controller.findOne('2')).rejects.toBeInstanceOf(
+    await expect(controller.findOne(2)).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
@@ -65,14 +65,14 @@ describe('UserController', () => {
     repo.update!.mockResolvedValue({ affected: 1 });
     repo.findOneBy!.mockResolvedValue(user);
 
-    await expect(controller.update('3', { name: 'Bob' })).resolves.toBe(user);
+    await expect(controller.update(3, { name: 'Bob' })).resolves.toBe(user);
     expect(repo.update).toHaveBeenCalledWith(3, { name: 'Bob' });
   });
 
-  it('remove deletes the user by numeric id', async () => {
+  it('remove deletes the user', async () => {
     repo.delete!.mockResolvedValue({ affected: 1 });
 
-    await controller.remove('4');
+    await controller.remove(4);
     expect(repo.delete).toHaveBeenCalledWith(4);
   });
 });

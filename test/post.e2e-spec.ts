@@ -37,7 +37,11 @@ describe('PostController (e2e)', () => {
         .send(dto())
         .expect(201);
 
-      expect(res.body).toMatchObject({ id: expect.any(Number), ...dto() });
+      expect(res.body).toMatchObject({
+        id: expect.any(Number),
+        ...dto(),
+        author: { id: author.id, name: author.name },
+      });
     });
 
     it('returns 400 when the author does not exist', async () => {
@@ -69,17 +73,18 @@ describe('PostController (e2e)', () => {
       await request(app.getHttpServer()).get('/post').expect(200).expect([]);
     });
 
-    it('returns all posts', async () => {
+    it('returns all posts, newest first, with their authors', async () => {
       await seedPost(dataSource, author.id, { title: 'First' });
       await seedPost(dataSource, author.id, { title: 'Second' });
 
       const res = await request(app.getHttpServer()).get('/post').expect(200);
 
-      expect(res.body).toHaveLength(2);
-      expect(res.body.map((p: { title: string }) => p.title).sort()).toEqual([
-        'First',
+      expect(res.body.map((p: { title: string }) => p.title)).toEqual([
         'Second',
+        'First',
       ]);
+      // Only the author's id and name go out: no email, no password.
+      expect(res.body[0].author).toEqual({ id: author.id, name: author.name });
     });
   });
 
@@ -95,11 +100,16 @@ describe('PostController (e2e)', () => {
           title: post.title,
           content: post.content,
           authorId: author.id,
+          author: { id: author.id, name: author.name },
         });
     });
 
     it('returns 404 for an unknown id', async () => {
       await request(app.getHttpServer()).get('/post/999').expect(404);
+    });
+
+    it('returns 400 for an id that is not a number', async () => {
+      await request(app.getHttpServer()).get('/post/abc').expect(400);
     });
   });
 
@@ -156,9 +166,14 @@ describe('PostController (e2e)', () => {
 
       await request(app.getHttpServer())
         .delete(`/post/${post.id}`)
-        .expect(200);
+        .expect(204)
+        .expect({});
       await request(app.getHttpServer()).get(`/post/${post.id}`).expect(404);
       await request(app.getHttpServer()).get(`/user/${author.id}`).expect(200);
+    });
+
+    it('returns 404 for an unknown id', async () => {
+      await request(app.getHttpServer()).delete('/post/999').expect(404);
     });
   });
 });

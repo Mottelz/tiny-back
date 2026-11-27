@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 import { UserService } from './user.service.js';
 import { User } from './entities/user.entity.js';
 import {
@@ -8,6 +9,9 @@ import {
   mockRepositoryProvider,
 } from '../test/mock-repository.js';
 import { verifyPassword } from './password.js';
+
+const queryError = (code: string) =>
+  new QueryFailedError('query', [], Object.assign(new Error(code), { code }));
 
 describe('UserService', () => {
   let service: UserService;
@@ -40,6 +44,16 @@ describe('UserService', () => {
       const created = repo.create!.mock.calls[0][0];
       expect(created.password).not.toBe(dto.password);
       expect(await verifyPassword(created.password, dto.password)).toBe(true);
+    });
+
+    it('throws ConflictException when the email is taken', async () => {
+      const dto = { name: 'Ann', email: 'ann@example.com', password: 'secret123' };
+      repo.create!.mockImplementation((data) => data);
+      repo.save!.mockRejectedValue(queryError('23505'));
+
+      await expect(service.create(dto)).rejects.toThrow(
+        new ConflictException('Email already in use'),
+      );
     });
   });
 
@@ -78,6 +92,15 @@ describe('UserService', () => {
       expect(repo.update).toHaveBeenCalledWith(1, { name: 'New' });
     });
 
+    it('throws ConflictException when the new email is taken', async () => {
+      repo.update!.mockRejectedValue(queryError('23505'));
+
+      await expect(
+        service.update(1, { email: 'taken@example.com' }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(repo.findOneBy).not.toHaveBeenCalled();
+    });
+
     it('throws NotFoundException when the user does not exist', async () => {
       repo.update!.mockResolvedValue({ affected: 0 });
       repo.findOneBy!.mockResolvedValue(null);
@@ -90,11 +113,16 @@ describe('UserService', () => {
 
   describe('remove', () => {
     it('deletes by id', async () => {
-      const result = { affected: 1, raw: [] };
-      repo.delete!.mockResolvedValue(result);
+      repo.delete!.mockResolvedValue({ affected: 1, raw: [] });
 
-      await expect(service.remove(1)).resolves.toBe(result);
+      await expect(service.remove(1)).resolves.toBeUndefined();
       expect(repo.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('throws NotFoundException when nothing was deleted', async () => {
+      repo.delete!.mockResolvedValue({ affected: 0, raw: [] });
+
+      await expect(service.remove(1)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });
